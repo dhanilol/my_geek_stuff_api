@@ -24,5 +24,6 @@ router = routers.DefaultRouter()
 urlpatterns = [
     path('', include(router.urls)),
     path('admin/', admin.site.urls),
-    url(r'module_user/', include('module_user.urls'))
+    url(r'module_user/', include('module_user.urls')),
+    url(r'module_anime/', include('module_anime.urls'))
 ]
