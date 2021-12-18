@@ -13,7 +13,7 @@ class User(AbstractUser):
     avatar = models.TextField(null=True, blank=True, default=None)
     status = models.CharField(max_length=32, null=False)
     created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
+    updated = models.DateTimeField(auto_now=True, null=True)
 
     USERNAME_FIELD = 'username'
     EMAIL_FIELD = 'primary_email'
