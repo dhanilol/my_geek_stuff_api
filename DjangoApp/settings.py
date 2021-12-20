@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'module_user',
     'module_anime',
+    'module_kitsu_api',
     'rest_framework',
 ]
 
