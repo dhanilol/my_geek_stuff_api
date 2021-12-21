@@ -24,21 +24,31 @@ class KitsuApiViewset(viewsets.GenericViewSet):
         self.page_limit = 5
 
     @action(methods=['GET'], detail=True)
-    def get_anime(self, request, pk):
-        endpoint = self.url + '/anime/' + pk
-        safe_endpoint = urllib.parse.quote_plus(endpoint)
+    def get(self, request, pk):
+        endpoint = '{}/anime/{}'.format(self.url, pk)
+        # safe_endpoint = urllib.parse.quote_plus(endpoint)
 
-        response = requests.get(safe_endpoint, self.header)
+        response = requests.get(endpoint, self.header)
         if response.status_code == 200:
             return response.json()
         else:
             raise response.json()
 
-    def search(self, request, params):
+    @action(methods=['GET'], detail=False)
+    def search(self, request, search_params):
         endpoint = self.url + '/anime'
         # safe_endpoint = urllib.parse.quote_plus(endpoint)
-        response = requests.get(endpoint, self.header, params=params)
+        # safe_params = urllib.parse.quote_plus()
+        # q = {
+        #     "filter['text']": search_params.get('title'),
+        #     "page[limit]": 5
+        # }
 
+        # TODO: remove this temporary thingy
+        title = search_params.get('title')
+        endpoint += "?filter[text]={}".format(urllib.parse.quote_plus(title))
+
+        response = requests.get(endpoint, self.header)
         if response.status_code == 200:
             return response.json()
         else:
