@@ -21,7 +21,7 @@ class KitsuApiViewset(viewsets.GenericViewSet):
         self.url = env('KITSU_BASE_URL')
         self.token = None
         self.header = generate_headers()
-        self.page_limit = 5
+        self.page_limit = 10
 
     @action(methods=['GET'], detail=True)
     def get(self, request, pk):
@@ -36,17 +36,16 @@ class KitsuApiViewset(viewsets.GenericViewSet):
 
     @action(methods=['GET'], detail=False)
     def search(self, request, search_params):
-        endpoint = self.url + '/anime'
-        # safe_endpoint = urllib.parse.quote_plus(endpoint)
-        # safe_params = urllib.parse.quote_plus()
-        # q = {
-        #     "filter['text']": search_params.get('title'),
-        #     "page[limit]": 5
-        # }
+        endpoint = self.url + '/anime?'
 
-        # TODO: remove this temporary thingy
-        title = search_params.get('title')
-        endpoint += "?filter[text]={}".format(urllib.parse.quote_plus(title))
+        if search_params.get('title'):
+            endpoint += "filter[text]={}".format(urllib.parse.quote_plus(search_params.get('title')))
+
+        if search_params.get('category'):
+            endpoint += "&filter[categories]={}".format(urllib.parse.quote_plus(search_params.get('category')))
+
+        endpoint += "&page[limit]={}".format(self.page_limit)
+        # endpoint += "&page[offset]=2"
 
         response = requests.get(endpoint, self.header)
         if response.status_code == 200:
