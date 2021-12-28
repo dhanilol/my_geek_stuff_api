@@ -26,13 +26,12 @@ class KitsuApiViewset(viewsets.GenericViewSet):
     @action(methods=['GET'], detail=True)
     def get(self, request, pk):
         endpoint = '{}/anime/{}'.format(self.url, pk)
-        # safe_endpoint = urllib.parse.quote_plus(endpoint)
 
         response = requests.get(endpoint, self.header)
         if response.status_code == 200:
             return response.json()
         else:
-            raise response.json()
+            return response.json()
 
     @action(methods=['GET'], detail=False)
     def search(self, request, search_params):

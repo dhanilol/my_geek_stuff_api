@@ -1,11 +1,13 @@
 from django.db import models
 
+# from module_anime.models.AnimeTitles import AnimeTitles
 from module_user.models.User import User
 
 
 class Anime(models.Model):
     id = models.AutoField(primary_key=True, max_length=10)
     api_id = models.IntegerField(max_length=10, null=False)
+    # titles = models.ForeignKey(AnimeTitles, on_delete=models.CASCADE, related_name='anime_titles')
     description = models.TextField(null=True)
     canonical_title = models.CharField(max_length=255, null=False)
     average_rating = models.CharField(max_length=16, null=True)

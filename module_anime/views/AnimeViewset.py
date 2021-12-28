@@ -1,3 +1,5 @@
+from urllib.request import urlopen
+
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -5,24 +7,28 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from module_anime.models.Anime import Anime
+from module_anime.models.AnimeTitles import AnimeTitles
 from module_anime.serializers.AnimeSerializer import AnimeSerializer
+from module_anime.serializers.AnimeTitlesSerializer import AnimeTitlesSerializer
 from module_kitsu_api.views.KitsuApiViewset import KitsuApiViewset
 
 
 class AnimeViewset(viewsets.ModelViewSet):
     queryset = Anime.objects.all()
     serializer_class = AnimeSerializer
-    permission_classes = [IsAuthenticated]  # TODO: change permissions to IsAuthenticated
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        q = self.queryset.filter(pk=self.request.user.pk)
+        q = self.queryset.filter(user_id=self.request.user.pk)
         return q
 
+    # TODO: if necessary, try using transaction
     @action(methods=['POST', 'PUT', 'PATCH'], detail=False)
     def include(self, request):
         """
         Includes anime/anime title using an ID from Kitsu API.
         """
+        user = self.request.user
         kitsu_api = KitsuApiViewset()
 
         query_params = request.query_params
@@ -34,19 +40,50 @@ class AnimeViewset(viewsets.ModelViewSet):
         except Exception as e:
             raise e
 
-        if not results:
+        if 'errors' in results:
             return Response(results, status=status.HTTP_404_NOT_FOUND)
         else:
             # TODO: add to db based on kitsu api response
+            anime_data = results['data']
+            anime_attr = results['data']['attributes']
 
-            anime_serializer = AnimeSerializer(results)
-            if not anime_serializer.is_valid():
-                return Response(anime_serializer.errors)
+            # this works but maybe not the best
+            # anime_attr['api_id'] = anime_data['id']
+            # anime_attr['canonical_title'] = anime_attr['canonicalTitle']
+            # anime_attr['user'] = user.id
+
+            data = {
+                'api_id': anime_data['id'],
+                'description': anime_attr['description'],
+                'canonical_title': anime_attr['canonicalTitle'],
+                'average_rating': anime_attr['averageRating'],
+                'age_rating': anime_attr['ageRating'],
+                'status': anime_attr['status'],
+                'episode_length': anime_attr['episodeLength'],
+                'nsfw': anime_attr['nsfw'],
+                'created_at': anime_attr['createdAt'],
+                'updated_at': anime_attr['updatedAt'],
+                'user': user.id
+            }
+            anime = AnimeSerializer(data=data)
+
+            if not anime.is_valid():
+                return Response(anime.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
-                try:
-                    anime_serializer.save()
-                except Exception as e:
-                    raise e
+                _anime = anime.save()
+
+                if 'titles' in anime_attr:
+                    for index, (language, title) in enumerate(anime_attr['titles']):
+                        _data = {
+                            'language': language,
+                            'title': title,
+                            'anime': anime.data.get('id')
+                        }
+                        title = AnimeTitlesSerializer(data=_data)
+                        if title.is_valid():
+                            _title = title.save()
+
+                return Response(anime, status=status.HTTP_201_CREATED)
 
     @action(methods=['GET'], detail=True)
     def details(self, request, pk):

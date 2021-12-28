@@ -4,7 +4,7 @@ from module_anime.models.Anime import Anime
 
 
 class AnimeSerializer(serializers.ModelSerializer):
-    # TODO: include animeTitles here?
+    # titles = serializers.HyperlinkedIdentityField(many=True, read_only=True, view_name='anime-titles-detail')
 
     class Meta:
         model = Anime
