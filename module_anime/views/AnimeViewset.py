@@ -17,9 +17,10 @@ class AnimeViewset(viewsets.ModelViewSet):
     queryset = Anime.objects.all()
     serializer_class = AnimeSerializer
     permission_classes = [IsAuthenticated]
+    ordering = '-id'
 
     def get_queryset(self):
-        q = self.queryset.filter(user_id=self.request.user.pk)
+        q = self.queryset.filter(user=self.request.user)
         return q
 
     # TODO: if necessary, try using transaction
@@ -47,6 +48,7 @@ class AnimeViewset(viewsets.ModelViewSet):
             anime_data = results['data']
             anime_attr = results['data']['attributes']
 
+            # TODO: verify on DB if there's not added already for the same user
             # this works but maybe not the best
             # anime_attr['api_id'] = anime_data['id']
             # anime_attr['canonical_title'] = anime_attr['canonicalTitle']
@@ -73,17 +75,20 @@ class AnimeViewset(viewsets.ModelViewSet):
                 _anime = anime.save()
 
                 if 'titles' in anime_attr:
-                    for index, (language, title) in enumerate(anime_attr['titles']):
+                    for index, language in enumerate(anime_attr['titles']):
                         _data = {
+                            'title': anime_attr['titles'][language],
                             'language': language,
-                            'title': title,
-                            'anime': anime.data.get('id')
+                            'anime': anime.data.get('id'),
                         }
                         title = AnimeTitlesSerializer(data=_data)
                         if title.is_valid():
                             _title = title.save()
+                        else:
+                            errors = title.errors
+                            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
-                return Response(anime, status=status.HTTP_201_CREATED)
+                return Response(_anime, status=status.HTTP_201_CREATED)
 
     @action(methods=['GET'], detail=True)
     def details(self, request, pk):

@@ -10,4 +10,7 @@ class AnimeTitles(models.Model):
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now=True, null=True)
 
-    anime = models.ForeignKey(Anime, on_delete=models.CASCADE, related_name='anime')
+    anime = models.ForeignKey(Anime, on_delete=models.CASCADE, related_name='titles')
+
+    def __str__(self):
+        return '%s: %s' % (self.language, self.title)
