@@ -6,7 +6,7 @@ from module_user.models.User import User
 from module_user.serializers.UserSerializer import UserSerializer
 
 
-class SignupViewset(viewsets.GenericViewSet, mixins.CreateModelMixin):
+class SignUpViewset(viewsets.GenericViewSet, mixins.CreateModelMixin):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
