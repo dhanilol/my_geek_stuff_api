@@ -2,8 +2,6 @@ import urllib.parse
 import requests
 
 from environ import environ
-from rest_framework import viewsets
-from rest_framework.decorators import action
 
 env = environ.Env()
 
@@ -15,7 +13,7 @@ def generate_headers():
     }
 
 
-class KitsuApiViewset(viewsets.GenericViewSet):
+class KitstuApiHelper:
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.url = env('KITSU_BASE_URL')
@@ -23,8 +21,7 @@ class KitsuApiViewset(viewsets.GenericViewSet):
         self.header = generate_headers()
         self.page_limit = 10
 
-    @action(methods=['GET'], detail=True)
-    def get(self, request, pk):
+    def get(self, pk):
         endpoint = '{}/anime/{}'.format(self.url, pk)
 
         response = requests.get(endpoint, self.header)
@@ -33,8 +30,7 @@ class KitsuApiViewset(viewsets.GenericViewSet):
         else:
             return response.json()
 
-    @action(methods=['GET'], detail=False)
-    def search(self, request, search_params):
+    def search(self, search_params={}):
         endpoint = self.url + '/anime?'
 
         if search_params.get('title'):
@@ -44,7 +40,6 @@ class KitsuApiViewset(viewsets.GenericViewSet):
             endpoint += "&filter[categories]={}".format(urllib.parse.quote_plus(search_params.get('category')))
 
         endpoint += "&page[limit]={}".format(self.page_limit)
-        # endpoint += "&page[offset]=2"
 
         response = requests.get(endpoint, self.header)
         if response.status_code == 200:
