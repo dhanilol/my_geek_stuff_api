@@ -23,86 +23,54 @@ class AnimeViewset(viewsets.ModelViewSet):
         q = self.queryset.filter(user=self.request.user)
         return q
 
-    # TODO: if necessary, try using transaction
     @action(methods=['POST', 'PUT', 'PATCH'], detail=False)
-    def include(self, request):
+    def include(self):
         """
         Includes anime/anime title using an ID from Kitsu API.
         """
-        user = self.request.user
         kitsu_api = KitstuApiHelper()
 
-        query_params = request.query_params
-        if not query_params.get('api_id'):
-            return Response("{'api_id': 'Not Found'}", status=status.HTTP_404_NOT_FOUND)
+        anime_id = self.request.get('api_id', None)
+        if not anime_id:
+            raise ValidationError({'api_id'}, 'Required field')
 
         try:
-            results = kitsu_api.get(pk=query_params.get('api_id'))
+            results = kitsu_api.get(pk=anime_id)
+            if 'errors' in results:
+                return Response(results, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             raise e
 
-        if 'errors' in results:
-            return Response(results, status=status.HTTP_404_NOT_FOUND)
+        mapped_data = kitsu_api.map_data(data=results)
+        mapped_data['user'] = self.request.user
+
+        anime = AnimeSerializer(data=mapped_data)
+        if not anime.is_valid():
+            return Response(anime.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            # TODO: add to db based on kitsu api response
-            anime_data = results['data']
-            anime_attr = results['data']['attributes']
+            _anime = anime.save()
 
-            # TODO: verify on DB if there's not added already for the same user
-
-            data = {
-                'api_id': anime_data['id'],
-                'description': anime_attr['description'],
-                'canonical_title': anime_attr['canonicalTitle'],
-                'average_rating': anime_attr['averageRating'],
-                'age_rating': anime_attr['ageRating'],
-                'status': anime_attr['status'],
-                'episode_length': anime_attr['episodeLength'],
-                'nsfw': anime_attr['nsfw'],
-                'created_at': anime_attr['createdAt'],
-                'updated_at': anime_attr['updatedAt'],
-                'user': user.id
-            }
-            anime = AnimeSerializer(data=data)
-
-            if 'titles' in anime_attr:
-                anime_titles = {}
-                for index, language in enumerate(anime_attr['titles']):
-                    anime_titles = {
-                        'title': anime_attr['titles'][language],
-                        'language': language,
-                        # 'anime': anime.data.get('id'),
-                    }
-
-                data['titles'] = anime_titles
-                anime = AnimeSerializer(data=data)
-
-            if not anime.is_valid():
-                return Response(anime.errors, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                _anime = anime.save()
-
-            return Response(_anime, status=status.HTTP_201_CREATED)
+        return Response(_anime, status=status.HTTP_201_CREATED)
 
     @action(methods=['GET'], detail=True)
-    def details(self, request, pk):
+    def details(self, request):
         anime = self.get_object()
         kitsu_api = KitstuApiHelper()
 
-        details = kitsu_api.get(pk=anime.api_id)
-        if details:
-            return Response(details, status=status.HTTP_200_OK)
-        else:
-            # TODO: handle errors
-            raise details
+        try:
+            details = kitsu_api.get(pk=anime.api_id)
+            if details:
+                return Response(details, status=status.HTTP_200_OK)
+            else:
+                raise details
+        except Exception as e:
+            raise e
 
     @action(methods=['GET'], detail=False)
     def search(self, request, **kwargs):
         kitsu_api = KitstuApiHelper()
-        # TODO: validate if valid params
-        query_params = request.query_params
 
-        results = kitsu_api.search(search_params=query_params)
+        results = kitsu_api.search(search_params=request.query_params)
         if results:
             return Response(results, status.HTTP_200_OK)
         else:
@@ -110,7 +78,7 @@ class AnimeViewset(viewsets.ModelViewSet):
         # TODO: handle request errors
 
 
-class AnimeTitlesViewset(viewsets.ModelViewSet):
+class AnimeTitleViewset(viewsets.ModelViewSet):
     queryset = AnimeTitle.objects.all()
     serializer_class = AnimeTitleSerializer
     permission_classes = [IsAuthenticated]

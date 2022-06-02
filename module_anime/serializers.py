@@ -5,8 +5,8 @@ from module_anime.models import Anime, AnimeTitle
 
 
 class AnimeSerializer(serializers.ModelSerializer):
-    # title = serializers.StringRelatedField(many=True)
-    # title = serializers.PrimaryKeyRelatedField(queryset=AnimeTitle.objects, required=False)
+    # anime_title = serializers.StringRelatedField(many=True)
+    # anime_title = serializers.PrimaryKeyRelatedField(queryset=AnimeTitle.objects, required=False)
 
     class Meta:
         model = Anime
@@ -23,11 +23,11 @@ class AnimeSerializer(serializers.ModelSerializer):
         instance = super().create(validated_data=validated_data)
 
         if anime_title:
-            self.create_related(anime_title)
+            self.__create_related(anime_title)
 
         return instance
 
-    def create_related(self, anime_title):
+    def __create_related(self, anime_title):
         for title in anime_title:
             title['anime'] = self.instance
             AnimeTitle.objects.create(**title)

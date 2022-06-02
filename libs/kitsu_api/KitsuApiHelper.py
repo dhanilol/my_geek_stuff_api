@@ -46,3 +46,35 @@ class KitstuApiHelper:
             return response.json()
         else:
             raise response.json()
+
+    def map_data(self, data):
+        try:
+            anime_data = data['data']
+            anime_attr = anime_data['attributes']
+
+            mapped_data = {
+                'api_id': anime_data['id'],
+                'description': anime_attr['description'],
+                'canonical_title': anime_attr['canonicalTitle'],
+                'average_rating': anime_attr['averageRating'],
+                'age_rating': anime_attr['ageRating'],
+                'status': anime_attr['status'],
+                'episode_length': anime_attr['episodeLength'],
+                'nsfw': anime_attr['nsfw'],
+                'created_at': anime_attr['createdAt'],
+                'updated_at': anime_attr['updatedAt'],
+            }
+
+            if 'titles' in anime_attr:
+                anime_titles = {}
+                for index, language in enumerate(anime_attr['titles']):
+                    anime_titles = {
+                        'title': anime_attr['titles'][language],
+                        'language': language,
+                    }
+                mapped_data['anime_title'] = anime_titles
+
+            return mapped_data
+
+        except Exception as e:
+            raise e
