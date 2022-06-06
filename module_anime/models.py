@@ -1,11 +1,12 @@
 from django.db import models
 
-from module_user.models.User import User
+from module_user.models import User
 
 
 class Anime(models.Model):
     id = models.AutoField(primary_key=True, max_length=10)
     api_id = models.IntegerField(max_length=10, null=False)
+
     description = models.TextField(null=True)
     canonical_title = models.CharField(max_length=255, null=False)
     average_rating = models.CharField(max_length=16, null=True)
@@ -34,3 +35,11 @@ class AnimeTitle(models.Model):
 
     # def __str__(self):
     #     return '%s: %s' % (self.language, self.title)
+
+
+class AnimeAvailability(models.Model):
+    id = models.AutoField(primary_key=True, max_length=10)
+    streaming_service = models.CharField(max_length=255, null=False)
+    seasons = models.IntegerField(max_length=8, null=True, default=None)
+
+    anime = models.OneToOneField(Anime, on_delete=models.CASCADE, related_name='availability')
