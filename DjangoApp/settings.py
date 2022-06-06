@@ -47,8 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'module_user',
-    'module_anime',
-    'module_kitsu_api'
+    'module_anime'
 ]
 
 REST_FRAMEWORK = {
