@@ -1,9 +1,7 @@
 from django.conf.urls import include, url
 from rest_framework import routers
 
-from module_user.views.MeViewSet import MeViewset
-from module_user.views.SignInViewset import SignInViewset
-from module_user.views.SignUpViewset import SignUpViewset
+from module_user.views import MeViewset, SignUpViewset, SignInViewset
 
 router = routers.DefaultRouter()
 
