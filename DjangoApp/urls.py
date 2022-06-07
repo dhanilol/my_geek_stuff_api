@@ -19,6 +19,8 @@ from django.urls import include, path
 from rest_framework import routers
 from rest_framework.authtoken.views import obtain_auth_token
 
+from module_user.views import get_token_apikey, get_token_auth
+
 router = routers.DefaultRouter()
 
 urlpatterns = [
@@ -26,6 +28,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('get_token/', obtain_auth_token, name='get_token'),
 
+    url(r'auth/get_token', get_token_apikey),
+    url(r'auth/auth_token', get_token_auth),
     url(r'module_user/', include('module_user.urls')),
     url(r'module_anime/', include('module_anime.urls'))
 ]

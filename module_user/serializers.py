@@ -1,3 +1,6 @@
+import binascii
+import os
+
 from django.contrib.auth import authenticate
 from django.contrib.auth import password_validation as validators
 from django.contrib.auth.hashers import make_password
@@ -9,6 +12,7 @@ from rest_framework.fields import empty
 from rest_framework.settings import api_settings
 from rest_framework_jwt.compat import PasswordField
 from rest_framework_jwt.serializers import JSONWebTokenSerializer
+from rest_framework_jwt.utils import jwt_payload_handler, jwt_encode_handler
 
 from module_user.models import User, ApiKey
 
@@ -24,65 +28,60 @@ class UserSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('status', 'created', 'updated')
 
-    def __init__(self, instance=None, data=empty, **kwargs):
-        super(UserSerializer, self).__init__(instance, data, **kwargs)
-
-    @property
-    def api_key(self):
-        return self.ApiKey
-
-    def validate(self, data):
-        user = User(data)
-        password = data.get('password', None)
-
-        errors = dict()
-        if password:
-            try:
-                validators.validate_password(password=password, user=user)
-            except exceptions.ValidationError as ex:
-                errors['password'] = list(ex.messages)
-
-        if errors:
-            raise serializers.ValidationError(errors)
-        return data
-        # return super(UserSerializer, self).validated_data()
-
-    @transaction.atomic
-    def create(self, validated_data):
-        if 'password' in validated_data:
-            new_password = make_password(validated_data['password'])
-            validated_data['password'] = new_password
-
-        user = super(UserSerializer, self).create(validated_data)
-        if user:
-            apiKey = self.api_key.create()
-        return user
-
 
 class ApiKeySerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
-        fields = ('id', 'name', 'user', 'key', 'created', 'updated')
+        # fields = ('id', 'name', 'user', 'key', 'created', 'updated')
+        fields = '__all__'
         read_only_fields = ('key', 'created', 'updated')
         model = ApiKey
 
 
-class MeSerializer(serializers.ModelSerializer):
+class ApiKeyTokenSerializer(JSONWebTokenSerializer):
+    def __init__(self, *args, **kwargs):
+        super(ApiKeyTokenSerializer, self).__init__(*args, **kwargs)
+        print('====', self.fields)
+        self.fields[self.username_field] = serializers.CharField()
+        self.fields['api_key'] = PasswordField(write_only=True)
+        print('====', self.fields)
 
-    class Meta:
-        model = User
-        fields = [
-            'id', 'first_name', 'last_name', 'username',
-            'primary_email', 'primary_phone', 'password',
-            'avatar'
-        ]
+    def validate(self, attrs):
+        credentials = {
+            self.username_field: attrs.get(self.username_field),
+            'api_key': attrs.get('api_key')
+        }
+
+        if not all(credentials.values()):
+            raise serializers.ValidationError('Authentication value missing')
+
+        try:
+            api_key = ApiKey.objects.get(
+                key__exact=credentials['api_key'],
+                user__username=credentials[self.username_field]
+            )
+        except Exception as e:
+            raise serializers.ValidationError(e)
+
+        if not api_key.user:
+            raise serializers.ValidationError('Authentication Error')
+
+        # TODO: move this to a separate utils file (update it to use from drf.jwt.utils)
+        payload = jwt_payload_handler(api_key.user)
+        payload['key_id'] = str(api_key.id)
+
+        token = {
+            'token': jwt_encode_handler(payload),
+            'user': api_key.user
+        }
+        return token
 
 
 class SignInSerializer(JSONWebTokenSerializer):
     def __init__(self, *args, **kwargs):
         super(SignInSerializer, self).__init__(*args, **kwargs)
-
+        print('ASKJFGSHf')
         self.fields[self.username_field] = serializers.CharField()
         self.fields['password'] = PasswordField(write_only=True)
 
@@ -116,3 +115,13 @@ class SignInSerializer(JSONWebTokenSerializer):
             msg = 'Must include "{username_field}" and "password".'
             msg = msg.format(username_field=self.username_field)
             raise serializers.ValidationError(msg)
+
+
+class MeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'id', 'first_name', 'last_name', 'username',
+            'primary_email', 'primary_phone', 'password',
+            'avatar'
+        ]

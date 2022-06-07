@@ -1,8 +1,10 @@
+import binascii
+import os
 import uuid
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.db import models
+from django.db import models, transaction
 
 
 class User(AbstractUser):
@@ -22,6 +24,27 @@ class User(AbstractUser):
     EMAIL_FIELD = 'primary_email'
     REQUIRED_FIELDS = []
 
+    @property
+    def apiKey(self):
+        return self.APIKey
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        is_new = not self.pk
+
+        if self.pk is not None:
+            if self.password is not None and self.password != '':
+                q = str(self.password).find('pbkdf2_sha256')
+                if q == -1:
+                    self.set_password(self.password)
+
+        self.email = self.email.lower()
+        super(User, self).save()
+
+        if is_new:
+            print(type(self.apiKey))
+            self.apiKey.create()
+
 
 class ApiKey(models.Model):
     class Meta:
@@ -39,9 +62,18 @@ class ApiKey(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         null=False,
-        related_name="ApiKey",
+        related_name="APIKey",
         default=0
     )
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        if not self.key:
+            key = binascii.hexlify(os.urandom(32)).decode()
+            while ApiKey.objects.filter(key=key).count() > 0:
+                key = binascii.hexlify(os.urandom(32)).decode()
+            self.key = key
+        super(ApiKey, self).save()
 
     def __str__(self):
         return self.name
