@@ -10,7 +10,7 @@ drf-nested-routers==0.93.4
 env==0.1.0
 environ==1.0
 idna==3.3
-PyJWT==2.4.0
+PyJWT==1.7.1
 pytz==2022.1
 requests==2.27.1
 six==1.16.0

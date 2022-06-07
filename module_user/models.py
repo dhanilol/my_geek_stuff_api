@@ -14,7 +14,7 @@ class User(AbstractUser):
     primary_phone = models.CharField(max_length=64, null=True, blank=True, default=None)
     password = models.CharField(max_length=255, null=False)
     avatar = models.TextField(null=True, blank=True, default=None)
-    status = models.CharField(max_length=32, null=False)
+    status = models.CharField(max_length=32, null=False, default='created')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True, null=True)
 

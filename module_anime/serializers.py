@@ -11,7 +11,7 @@ class AnimeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Anime
         fields = [
-            'id', 'api_id', 'titles', 'description', 'canonical_title',
+            'id', 'api_id', 'title', 'description', 'canonical_title',
             'average_rating', 'age_rating', 'status', 'episode_length',
             'nsfw', 'created_at', 'updated_at', 'favorite', 'user'
         ]

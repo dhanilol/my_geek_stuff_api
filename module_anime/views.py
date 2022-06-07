@@ -13,7 +13,7 @@ from module_anime.serializers import AnimeSerializer, AnimeTitleSerializer
 
 
 class AnimeViewset(viewsets.ModelViewSet):
-    queryset = Anime.objects.all()
+    queryset = Anime.objects.none()
     serializer_class = AnimeSerializer
     permission_classes = [IsAuthenticated]
     # filter_backends = [BelongsToApiKey]
@@ -24,13 +24,13 @@ class AnimeViewset(viewsets.ModelViewSet):
         return q
 
     @action(methods=['POST', 'PUT', 'PATCH'], detail=False)
-    def include(self):
+    def include(self, request):
         """
         Includes anime/anime title using an ID from Kitsu API.
         """
         kitsu_api = KitstuApiHelper()
 
-        anime_id = self.request.get('api_id', None)
+        anime_id = self.request.data.get('api_id', None)
         if not anime_id:
             raise ValidationError({'api_id'}, 'Required field')
 
@@ -42,15 +42,18 @@ class AnimeViewset(viewsets.ModelViewSet):
             raise e
 
         mapped_data = kitsu_api.map_data(data=results)
-        mapped_data['user'] = self.request.user
+        mapped_data['user'] = self.request.user.pk
 
-        anime = AnimeSerializer(data=mapped_data)
-        if not anime.is_valid():
-            return Response(anime.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            _anime = anime.save()
+        anime = AnimeSerializer.create(mapped_data)
+        # anime = AnimeSerializer(data=mapped_data)
+        # _anime = anime.create(anime)
 
-        return Response(_anime, status=status.HTTP_201_CREATED)
+        # if not anime.is_valid():
+        #     return Response(anime.errors, status=status.HTTP_400_BAD_REQUEST)
+        # else:
+        #     _anime = anime.save()
+
+        return Response(anime, status=status.HTTP_201_CREATED)
 
     @action(methods=['GET'], detail=True)
     def details(self, request):
