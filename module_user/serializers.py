@@ -48,10 +48,8 @@ class ApiKeySerializer(serializers.ModelSerializer):
 class ApiKeyTokenSerializer(JSONWebTokenSerializer):
     def __init__(self, *args, **kwargs):
         super(ApiKeyTokenSerializer, self).__init__(*args, **kwargs)
-        print('====', self.fields)
         self.fields[self.username_field] = serializers.CharField()
         self.fields['api_key'] = PasswordField(write_only=True)
-        print('====', self.fields)
 
     def validate(self, attrs):
         credentials = {

@@ -30,8 +30,7 @@ class AnimeTitle(models.Model):
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now=True, null=True)
 
-    # anime = models.ForeignKey(Anime, on_delete=models.CASCADE, related_name='title')
-    anime = models.OneToOneField(Anime, on_delete=models.CASCADE, related_name='title')
+    anime = models.ForeignKey(Anime, on_delete=models.CASCADE, related_name='anime_title')
 
     # def __str__(self):
     #     return '%s: %s' % (self.language, self.title)

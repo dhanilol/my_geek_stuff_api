@@ -13,7 +13,7 @@ from module_anime.serializers import AnimeSerializer, AnimeTitleSerializer
 
 
 class AnimeViewset(viewsets.ModelViewSet):
-    queryset = Anime.objects.none()
+    queryset = Anime.objects.all()
     serializer_class = AnimeSerializer
     permission_classes = [IsAuthenticated]
     # filter_backends = [BelongsToApiKey]
@@ -42,18 +42,15 @@ class AnimeViewset(viewsets.ModelViewSet):
             raise e
 
         mapped_data = kitsu_api.map_data(data=results)
-        mapped_data['user'] = self.request.user.pk
+        mapped_data['user'] = self.request.user
 
-        anime = AnimeSerializer.create(mapped_data)
-        # anime = AnimeSerializer(data=mapped_data)
-        # _anime = anime.create(anime)
+        # serializer = self.get_serializer(data=mapped_data)
 
-        # if not anime.is_valid():
-        #     return Response(anime.errors, status=status.HTTP_400_BAD_REQUEST)
-        # else:
-        #     _anime = anime.save()
+        serializer = AnimeSerializer.create(self, validated_data=mapped_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-        return Response(anime, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(methods=['GET'], detail=True)
     def details(self, request):
