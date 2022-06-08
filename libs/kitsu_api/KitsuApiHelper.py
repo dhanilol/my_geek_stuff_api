@@ -66,13 +66,11 @@ class KitstuApiHelper:
             }
 
             if 'titles' in anime_attr:
-                anime_titles = {}
-                for index, language in enumerate(anime_attr['titles']):
-                    anime_titles = {
-                        'title': anime_attr['titles'][language],
-                        'language': language,
-                    }
-                mapped_data['anime_title'] = anime_titles
+                anime_titles = [
+                    {'title': anime_attr['titles'][language], 'language': language}
+                    for index, language in enumerate(anime_attr['titles'])
+                ]
+                mapped_data['title'] = anime_titles
 
             return mapped_data
 
