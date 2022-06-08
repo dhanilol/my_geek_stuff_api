@@ -20,21 +20,27 @@ from module_user.models import User, ApiKey
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        # fields = [
-        #     'id', 'first_name', 'last_name', 'username',
-        #     'primary_email', 'primary_phone', 'password',
-        #     'avatar', 'status', 'created', 'updated'
-        # ]
-        fields = '__all__'
+        fields = [
+            'id', 'first_name', 'last_name', 'username',
+            'primary_email', 'primary_phone', 'password',
+            'avatar', 'status', 'created', 'updated'
+        ]
         read_only_fields = ('status', 'created', 'updated')
+
+    @transaction.atomic
+    def create(self, validated_data):
+        if 'password' in validated_data:
+            new_password = make_password(validated_data['password'])
+            validated_data['password'] = new_password
+
+        return super(UserSerializer, self).create(validated_data)
 
 
 class ApiKeySerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
-        # fields = ('id', 'name', 'user', 'key', 'created', 'updated')
-        fields = '__all__'
+        fields = ('id', 'name', 'user', 'key', 'created', 'updated')
         read_only_fields = ('key', 'created', 'updated')
         model = ApiKey
 

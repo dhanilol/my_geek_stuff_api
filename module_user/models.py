@@ -42,7 +42,6 @@ class User(AbstractUser):
         super(User, self).save()
 
         if is_new:
-            print(type(self.apiKey))
             self.apiKey.create()
 
 
