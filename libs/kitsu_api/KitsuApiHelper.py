@@ -47,13 +47,13 @@ class KitstuApiHelper:
         else:
             raise response.json()
 
-    def map_data(self, data):
+    def map_data(self, data) -> dict:
         try:
             anime_data = data['data']
             anime_attr = anime_data['attributes']
 
             mapped_data = {
-                'api_id': anime_data['id'],
+                'api_anime_id': anime_data['id'],
                 'description': anime_attr['description'],
                 'canonical_title': anime_attr['canonicalTitle'],
                 'average_rating': anime_attr['averageRating'],

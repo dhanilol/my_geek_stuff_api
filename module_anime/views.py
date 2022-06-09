@@ -30,25 +30,30 @@ class AnimeViewset(viewsets.ModelViewSet):
         """
         kitsu_api = KitstuApiHelper()
 
-        anime_id = self.request.data.get('api_id', None)
-        if not anime_id:
-            raise ValidationError({'api_id'}, 'Required field')
+        api_anime_id = self.request.data.get('api_anime_id', None)
+        if not api_anime_id:
+            raise ValidationError({'api_anime_id': ['Required field']})
+
+        # TODO: Adds this filters/validations somewhere move convenient
+        q = Anime.objects.filter(api_anime_id=api_anime_id)
+        # TODO: think about a good way to make the include works with path/put
+        if q.count() > 0 and request.method == 'POST':
+            raise ValidationError({'api_anime_id': ['ID Already included']})
 
         try:
-            results = kitsu_api.get(pk=anime_id)
+            results = kitsu_api.get(pk=api_anime_id)
             if 'errors' in results:
                 return Response(results, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             raise e
 
         mapped_data = kitsu_api.map_data(data=results)
-        mapped_data['user'] = self.request.user
+        mapped_data['favorite'] = self.request.data.get('favorite', None)
+        mapped_data['user'] = self.request.user.pk
 
-        # serializer = self.get_serializer(data=mapped_data)
-
-        serializer = AnimeSerializer.create(self, validated_data=mapped_data)
+        serializer = self.get_serializer(data=mapped_data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        self.perform_create(serializer)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -58,7 +63,7 @@ class AnimeViewset(viewsets.ModelViewSet):
         kitsu_api = KitstuApiHelper()
 
         try:
-            details = kitsu_api.get(pk=anime.api_id)
+            details = kitsu_api.get(pk=anime.api_anime_id)
             if details:
                 return Response(details, status=status.HTTP_200_OK)
             else:

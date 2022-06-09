@@ -4,8 +4,16 @@ from module_user.models import User
 
 
 class Anime(models.Model):
-    id = models.AutoField(primary_key=True, max_length=10)
-    api_id = models.IntegerField(max_length=10, null=False)
+    id = models.AutoField(
+        primary_key=True,
+        max_length=10
+    )
+
+    api_anime_id = models.IntegerField(
+        max_length=10,
+        null=True,
+        verbose_name='The external ID for the anime'
+    )
 
     description = models.TextField(null=True)
     canonical_title = models.CharField(max_length=255, null=False)
