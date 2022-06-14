@@ -30,6 +30,8 @@ class AnimeViewset(viewsets.ModelViewSet):
         """
         kitsu_api = KitstuApiHelper()
 
+        # TODO: use the api_name to find the API being consumed on each register
+
         api_anime_id = self.request.data.get('api_anime_id', None)
         if not api_anime_id:
             raise ValidationError({'api_anime_id': ['Required field']})

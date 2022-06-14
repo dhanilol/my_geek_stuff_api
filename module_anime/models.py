@@ -12,8 +12,15 @@ class Anime(models.Model):
     api_anime_id = models.IntegerField(
         max_length=10,
         null=True,
-        verbose_name='The external ID for the anime'
+        verbose_name='The external API register ID for the register included'
     )
+
+    # TODO: add this field to open the possibility to use another API
+    # api_name = models.CharField(
+    #     max_length=255,
+    #     null=True,
+    #     verbose_name='The external API name that for the register included'
+    # )
 
     description = models.TextField(null=True)
     canonical_title = models.CharField(max_length=255, null=False)
@@ -25,6 +32,7 @@ class Anime(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     favorite = models.BooleanField(null=False, default=False)
+    # user_rating = models.IntegerField(null=True)
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now=True, null=True)
 
