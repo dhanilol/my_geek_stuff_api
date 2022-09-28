@@ -31,5 +31,6 @@ urlpatterns = [
     url(r'auth/get_token', get_token_apikey),
     url(r'auth/auth_token', get_token_auth),
     url(r'module_user/', include('module_user.urls')),
-    url(r'module_anime/', include('module_anime.urls'))
+    url(r'module_anime/', include('module_anime.urls')),
+    url(r'module_book/', include('module_book.urls'))
 ]
