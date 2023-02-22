@@ -1,21 +1,22 @@
-from django.conf.urls import include, url
-from rest_framework_nested import routers
-# from rest_framework import routers
+from django.conf.urls import include
+from django.urls import path
 
+from rest_framework import routers as drf_routers
+from rest_framework_nested import routers
 
 from module_book.views import BookViewset
 
-# router = routers.DefaultRouter()
-router = routers.SimpleRouter()
+# Set endpoints as DRF pattern
+drf_book_router = drf_routers.DefaultRouter()
+drf_book_router.register(r'book', BookViewset)
 
-router.register(r'book', BookViewset)
-# router.register(r'book_author', AuthorViewset)
 
-# anime_router = routers.NestedSimpleRouter(router, r'anime')
-# anime_router.register(r'anime_title', AnimeTitleViewset, basename='anime-animetitle')
-
+# TODO: nested endpoints for /author/{id}/book/
+# # Set endpoints as nested pattern
+# # https://github.com/alanjds/drf-nested-routers for more info
+# nested_router = routers.SimpleRouter()
+# nested_router.register(r'author', AuthorViewset)
 
 urlpatterns = [
-    url(r'^', include(router.urls)),
-    # url(r'', include(anime_router.urls)),
+    path(r'', include(drf_book_router.urls)),
 ]

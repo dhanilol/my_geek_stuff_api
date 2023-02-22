@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from libs.book.google_books.GoogleBooksApiHelper import GoogleBooksApiHelper
@@ -12,7 +13,7 @@ from module_book.serializers import BookSerializer
 class BookViewset(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     # filter_backends = [BelongsToApiKey]
     ordering = '-id'
 
@@ -23,11 +24,12 @@ class BookViewset(viewsets.ModelViewSet):
     @action(methods=['POST', 'PUT', 'PATCH'], detail=False)
     def include(self, request):
         """
-        Includes books using an ID from Google Books API.
+        Includes books using an ID from External API.
         """
         books_api = GoogleBooksApiHelper()
 
         # TODO: use the api_name to find the API being consumed on each register
+        api_helper = self.__get_api_helper(request.get('api_name'))
 
         api_book_id = self.request.data.get('api_book_id', None)
         if not api_book_id:
@@ -82,3 +84,6 @@ class BookViewset(viewsets.ModelViewSet):
             return Response({}, status=status.HTTP_404_NOT_FOUND)
         # TODO: handle request errors
 
+
+    def __get_api_helper(self, api_name):
+        pass

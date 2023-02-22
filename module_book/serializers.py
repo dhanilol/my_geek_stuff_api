@@ -1,7 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from module_book.models import Book, Author, BookCategory
+from module_book.models import Book, Author, Category
 
 
 class BookCategorySerializer(serializers.ModelSerializer):
@@ -50,6 +50,6 @@ class BookSerializer(serializers.ModelSerializer):
             data = {
                 'name': category,
             }
-            BookCategory.objects.create(**data)
+            Category.objects.create(**data)
 
         return instance
