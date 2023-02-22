@@ -27,6 +27,7 @@ drf-spectacular = "*"
 [dev-packages]
 pytest = "*"
 pytest-django = "*"
+requests-mock = "*"
 
 [requires]
 python_version = "3.10"
