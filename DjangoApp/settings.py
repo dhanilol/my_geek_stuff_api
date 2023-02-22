@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
+    'drf_spectacular',
     'module_user',
     'module_anime'
 ]
@@ -63,6 +64,17 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'My Geek Stuff API',
+    'DESCRIPTION': 'This is a nice API for collecting your geek stuff',
+    'VERSION': '0.0.1',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SERVE_PERMISSIONS': [
+        'rest_framework.permissions.AllowAny'
+    ],
 }
 
 MIDDLEWARE = [

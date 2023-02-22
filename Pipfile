@@ -22,6 +22,7 @@ sqlparse = "*"
 tzdata = "*"
 urllib3 = "*"
 djangorestframework-simplejwt = "*"
+drf-spectacular = "*"
 
 [dev-packages]
 pytest = "*"

@@ -15,13 +15,22 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
 
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    path('documentation/schema/', SpectacularAPIView.as_view(), name='documentation'),
+    path('documentation/', SpectacularRedocView.as_view(url_name='documentation'), name='redoc'),
+    path('documentation/api/', SpectacularSwaggerView.as_view(url_name='documentation'), name='swagger-ui'),
+
 
     # TODO: set an application for auth & overwrite method
     path('auth/get_token/', TokenObtainPairView.as_view(), name='get_token'),
