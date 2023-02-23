@@ -40,7 +40,8 @@ class Book(models.Model):
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now=True, null=True)
 
-    api_book_id = models.IntegerField(
+    api_book_id = models.CharField(
+        max_length=255,
         null=True,
         verbose_name='The external API register ID for the register included'
     )

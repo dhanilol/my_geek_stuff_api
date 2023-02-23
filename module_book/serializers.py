@@ -1,7 +1,8 @@
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
-from module_book.models import Book, Author, Category
+from module_book.models import Book, Author, Category, Publisher
 
 
 class BookCategorySerializer(serializers.ModelSerializer):
@@ -28,7 +29,16 @@ class PublisherSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class BookIncludeRequestSerializer(serializers.Serializer):
+    api_name = serializers.ChoiceField(choices=['google_books', 'nyt'], required=True)
+    api_book_id = serializers.CharField(required=True)
+
+
 class BookSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer(many=True, required=False)
+    category = BookCategorySerializer(many=True, required=False)
+    publisher = PublisherSerializer(many=True, required=False)
+
     class Meta:
         model = Book
         fields = '__all__'
@@ -37,19 +47,20 @@ class BookSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         author_data = validated_data.pop('author', None)
         category_data = validated_data.pop('category', None)
+        publisher_data = validated_data.pop('publisher', None)
 
         instance = super(BookSerializer, self).create(validated_data)
 
         for author in author_data:
-            data = {
-                'name': author
-            }
-            Author.objects.create(**data)
+            author['book'] = instance
+            Author.objects.create(**author)
 
         for category in category_data:
-            data = {
-                'name': category,
-            }
-            Category.objects.create(**data)
+            author['book'] = instance
+            Category.objects.create(**category)
+
+        for publisher in publisher_data:
+            author['book'] = instance
+            Publisher.objects.create(**publisher)
 
         return instance
