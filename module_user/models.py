@@ -8,7 +8,7 @@ from django.db import models, transaction
 
 
 class User(AbstractUser):
-    id = models.AutoField(primary_key=True, max_length=10)
+    id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=64, null=False)
     last_name = models.CharField(max_length=255, null=False)
     username = models.CharField(max_length=32, null=False, unique=True)

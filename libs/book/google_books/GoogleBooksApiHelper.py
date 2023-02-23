@@ -30,19 +30,34 @@ class GoogleBooksApiHelper:
         else:
             return response.json()
 
-    def search(self, search_params={}):
-        endpoint = self.url + '/q?'
+    def search(self, search_params: dict):
+        endpoint = self.url + '/volumes?'
+
+        if search_params.get('q'):
+            endpoint += "q={}".format(urllib.parse.quote_plus(search_params.get('q')))
+        else:
+            endpoint += "q={}".format(urllib.parse.quote_plus(search_params.get('title')))
 
         if search_params.get('title'):
-            endpoint += "filter[text]={}".format(urllib.parse.quote_plus(search_params.get('title')))
+            endpoint += "+intitle:{}".format(urllib.parse.quote_plus(search_params.get('title')))
 
-        if search_params.get('category'):
-            endpoint += "&filter[categories]={}".format(urllib.parse.quote_plus(search_params.get('category')))
+        if search_params.get('author'):
+            endpoint += "+inauthor:{}".format(urllib.parse.quote_plus(search_params.get('author')))
 
-        if search_params.get('language'):
-            endpoint += "&filter[langRestrict]={}".format(urllib.parse.quote_plus(search_params.get('language')))
+        if search_params.get('publisher'):
+            endpoint += "+inpublisher:{}".format(urllib.parse.quote_plus(search_params.get('publisher')))
 
-        endpoint += "&page[limit]={}".format(self.page_limit)
+        # TODO: check if subject is the same as category
+        if search_params.get('subject'):
+            endpoint += "+insubject:{}".format(urllib.parse.quote_plus(search_params.get('subject')))
+
+        if search_params.get('isbn'):
+            endpoint += "+isbn:{}".format(urllib.parse.quote_plus(search_params.get('isbn')))
+
+        query_params = {}
+        if 'language' in search_params:
+            endpoint += "&langRestrict={}".format(urllib.parse.quote_plus(search_params.get('language')))
+        # TODO: check all filter options on google api
 
         response = requests.get(endpoint, self.header)
         if response.status_code == 200:

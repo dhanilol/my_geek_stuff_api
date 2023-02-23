@@ -4,21 +4,21 @@ from module_user.models import User
 
 
 class Author(models.Model):
-    id = models.AutoField(primary_key=True, max_length=10)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, null=False)
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now=True, null=True)
 
 
 class Publisher(models.Model):
-    id = models.AutoField(primary_key=True, max_length=10)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, null=False)
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now=True, null=True)
 
 
 class Category(models.Model):
-    id = models.AutoField(primary_key=True, max_length=10)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, null=False)
     description = models.TextField(null=True)
     created = models.DateTimeField(auto_now=True)
@@ -26,7 +26,7 @@ class Category(models.Model):
 
 
 class Book(models.Model):
-    id = models.AutoField(primary_key=True, max_length=10)
+    id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255, null=False)
     description = models.TextField(null=True)
     language = models.CharField(max_length=16, null=True)
@@ -41,7 +41,6 @@ class Book(models.Model):
     updated = models.DateTimeField(auto_now=True, null=True)
 
     api_book_id = models.IntegerField(
-        max_length=10,
         null=True,
         verbose_name='The external API register ID for the register included'
     )
@@ -50,7 +49,6 @@ class Book(models.Model):
         max_length=255,
         null=True,
         verbose_name='The external API name that for the register included',
-        choices=['google_books', 'good_reads', 'nyt']
     )
 
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='book')

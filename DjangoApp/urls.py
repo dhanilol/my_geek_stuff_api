@@ -37,6 +37,6 @@ urlpatterns = [
     path('auth/refresh_token', TokenRefreshView.as_view(), name='token_refresh'),
 
     path(r'module_user/', include('module_user.urls')),
-    path(r'module_anime/', include('module_anime.urls'))
+    path(r'module_anime/', include('module_anime.urls')),
     path(r'module_book/', include('module_book.urls'))
 ]

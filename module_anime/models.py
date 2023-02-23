@@ -4,23 +4,18 @@ from module_user.models import User
 
 
 class Anime(models.Model):
-    id = models.AutoField(
-        primary_key=True,
-        max_length=10
-    )
+    id = models.AutoField(primary_key=True)
 
     api_anime_id = models.IntegerField(
-        max_length=10,
         null=True,
         verbose_name='The external API register ID for the register included'
     )
 
-    # TODO: add this field to open the possibility to use another API
-    # api_name = models.CharField(
-    #     max_length=255,
-    #     null=True,
-    #     verbose_name='The external API name that for the register included'
-    # )
+    api_name = models.CharField(
+        max_length=255,
+        null=True,
+        verbose_name='The external API name that for the register included'
+    )
 
     description = models.TextField(null=True)
     canonical_title = models.CharField(max_length=255, null=False)
@@ -32,7 +27,7 @@ class Anime(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     favorite = models.BooleanField(null=False, default=False)
-    # user_rating = models.IntegerField(null=True)
+    user_rating = models.IntegerField(null=True)
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now=True, null=True)
 
@@ -40,7 +35,7 @@ class Anime(models.Model):
 
 
 class AnimeTitle(models.Model):
-    id = models.AutoField(primary_key=True, max_length=10)
+    id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255, null=False)
     language = models.CharField(max_length=16, null=False)
     created = models.DateTimeField(auto_now=True)
@@ -52,9 +47,10 @@ class AnimeTitle(models.Model):
     #     return '%s: %s' % (self.language, self.title)
 
 
-class AnimeAvailability(models.Model):
-    id = models.AutoField(primary_key=True, max_length=10)
-    streaming_service = models.CharField(max_length=255, null=False)
-    seasons = models.IntegerField(max_length=8, null=True, default=None)
-
-    anime = models.OneToOneField(Anime, on_delete=models.CASCADE, related_name='availability')
+# TODO: move this to a method. Check availability only when it is called
+# class AnimeAvailability(models.Model):
+#     id = models.AutoField(primary_key=True)
+#     streaming_service = models.CharField(max_length=255, null=False)
+#     seasons = models.IntegerField(null=True, default=None)
+#
+#     anime = models.OneToOneField(Anime, on_delete=models.CASCADE, related_name='availability')
